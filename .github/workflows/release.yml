@@ -16,6 +16,7 @@ jobs:
       # Checks-out repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
 
+      - run: brew install bash
       - run: brew install tunnelblick
       - run: brew tap benwebber/tunnelblickctl
       - run: brew install tunnelblickctl
