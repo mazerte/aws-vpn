@@ -47,3 +47,5 @@ jobs:
           download-url: https://github.com/mazerte/aws-vpn/releases/download/${{ steps.extract-version.outputs.tag-name }}/aws-vpn.tar.gz
           commit-message: |
             {{formulaName}} {{version}}
+        env:
+          COMMITTER_TOKEN: ${{ secrets.HOMEBREW_COMMITTER_TOKEN }}
