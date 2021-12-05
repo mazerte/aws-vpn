@@ -15,10 +15,12 @@ jobs:
     steps:
       # Checks-out repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
-      
+
       # Setup Ruby
       - uses: ruby/setup-ruby@v1
-      
+        with:
+          ruby-version: 2.7
+
       # Install bashly
       - name: Install bashly
         run: gem install bashly
@@ -30,5 +32,5 @@ jobs:
       # Smoke test
       - name: Smoke test
         run: ./aws-vpn list
-        
-      
+
+
