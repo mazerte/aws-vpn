@@ -17,6 +17,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - run: brew install tunnelblick
+      - run: brew tap benwebber/tunnelblickctl
       - run: brew install tunnelblickctl
       - run: brew install awscli
 
