@@ -25,10 +25,10 @@ jobs:
       - uses: thedoctor0/zip-release@master
         with:
           type: tar
-          path: bin/
-          filename: release.tar.gz
+          path: bin/*
+          filename: aws-vpn.tar.gz
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: release.tar.gz
+          artifacts: aws-vpn.tar.gz
           token: ${{ secrets.GITHUB_TOKEN }}
