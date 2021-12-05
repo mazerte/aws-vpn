@@ -12,6 +12,15 @@ To use `aws-vpn` you must install:
 
 ### Installation
 
+### Homebrew
+
+Run these command on your terminal:
+
+```
+$ brew tap mazerte/software
+$ brew install aws-vpn
+```
+
 #### Manual
 
 Run these command on your terminal:

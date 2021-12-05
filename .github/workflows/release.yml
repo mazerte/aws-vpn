@@ -11,6 +11,11 @@ jobs:
       # Checks-out repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
 
+      - name: Extract version
+        id: extract-version
+        run: |
+          printf "::set-output name=%s::%s\n" tag-name "${GITHUB_REF#refs/tags/}"
+
       - name: Install dependencies
         run: |
           brew install bash
@@ -18,6 +23,7 @@ jobs:
 
       # Run bashly
       - run: |
+          sed -i '' 's/VERSION/${{ steps.extract-version.outputs.tag-name }}/g' src/bashly.yml
           bashly generate
           mkdir bin
           cp aws-vpn bin/aws-vpn
@@ -32,11 +38,6 @@ jobs:
         with:
           artifacts: bin/aws-vpn.tar.gz
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract version
-        id: extract-version
-        run: |
-          printf "::set-output name=%s::%s\n" tag-name "${GITHUB_REF#refs/tags/}"
 
       - uses: mislav/bump-homebrew-formula-action@v1
         if: "!contains(github.ref, '-')" # skip prereleases

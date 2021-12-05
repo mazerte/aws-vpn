@@ -1,6 +1,6 @@
 name: aws-vpn
 help: Create and manage VPN connect inside your AWS VPC
-version: 0.1.0
+version: VERSION
 
 commands:
 - name: list
