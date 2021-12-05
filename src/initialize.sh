@@ -12,12 +12,14 @@ function _init_folders() {
   mkdir -pv "$AWS_VPN_DIR/ovpns"
   mkdir -pv "$AWS_VPN_DIR/config"
 
-  if [ $AWS_VPN_DEV == 1 ]; then
+  if [ "$AWS_VPN_DEV" == 1 ]; then
     echo "INFO: development mode activated"
     cp vpn.cfn.yml $AWS_VPN_DIR/vpn.cfn.yml
     cp config.tpl.ovpn $AWS_VPN_DIR/config.tpl.ovpn
   else
-
+    REPO_URL="https://raw.githubusercontent.com/mazerte/aws-vpn/main/"
+    curl -s "$REPO_URL/vpn.cfn.yml" > $AWS_VPN_DIR/vpn.cfn.yml
+    curl -s "$REPO_URL/config.tpl.ovpn" > $AWS_VPN_DIR/config.tpl.ovpn
   fi
 }
 
