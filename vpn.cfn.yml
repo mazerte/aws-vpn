@@ -1,0 +1,74 @@
+Parameters:
+  VpcId:
+    Description: The EC2 Key Pair to allow SSH access to the instance
+    Type: 'AWS::EC2::VPC::Id'
+  SubnetIds:
+    Description: The EC2 Key Pair to allow SSH access to the instance
+    Type: 'List<AWS::EC2::Subnet::Id>'
+  CertificationArn:
+    Description: The EC2 Key Pair to allow SSH access to the instance
+    Type: 'String'
+
+Resources:
+  VpnSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${AWS::StackName}-sg
+      GroupDescription: !Sub SecrityGroup for ${AWS::StackName} VPN Client
+      VpcId: !Ref VpcId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+  VpnEndpoint:
+    Type: AWS::EC2::ClientVpnEndpoint
+    Properties:
+      VpcId: !Ref VpcId
+      Description:  "--"
+      AuthenticationOptions:
+        - Type: certificate-authentication
+          MutualAuthentication:
+            ClientRootCertificateChainArn: !Ref CertificationArn
+      ClientCidrBlock: "172.31.0.0/22"
+      ConnectionLogOptions:
+        Enabled: false
+      SecurityGroupIds:
+        - !Ref VpnSecurityGroup
+      ServerCertificateArn: !Ref CertificationArn
+      TagSpecifications:
+        - ResourceType: "client-vpn-endpoint"
+          Tags:
+          - Key: "Name"
+            Value: !Sub ${AWS::StackName}
+
+  VpnNetworkAssociation:
+    Type: "AWS::EC2::ClientVpnTargetNetworkAssociation"
+    Properties:
+      ClientVpnEndpointId: !Ref VpnEndpoint
+      SubnetId: !Select [ 0, !Ref SubnetIds ]
+
+  VpnAuthorizationRule:
+    Type: AWS::EC2::ClientVpnAuthorizationRule
+    Properties:
+      ClientVpnEndpointId: !Ref VpnEndpoint
+      TargetNetworkCidr: "0.0.0.0/0"
+      AuthorizeAllGroups: true
+
+  VpnRoute:
+    Type: AWS::EC2::ClientVpnRoute
+    DependsOn: VpnNetworkAssociation
+    Properties:
+      Description: "--"
+      ClientVpnEndpointId: !Ref VpnEndpoint
+      TargetVpcSubnetId: !Select [ 0, !Ref SubnetIds ]
+      DestinationCidrBlock: "0.0.0.0/0"
+
+Outputs:
+  VpnEndpointUrl:
+    Description: "--"
+    Value: !Sub
+      - ${EndpointId}.prod.clientvpn.${AWS::Region}.amazonaws.com
+      - EndpointId: !Ref VpnEndpoint

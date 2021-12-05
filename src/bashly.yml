@@ -1,0 +1,72 @@
+name: aws-vpn
+help: Create and manage VPN connect inside your AWS VPC
+version: 0.1.0
+
+commands:
+- name: list
+  help: List all the connections.
+
+- name: status
+  help: Status id all the connections.
+
+- name: upgrade
+  help: Upgrade AWS VPN template files.
+
+- name: create
+  help: Create a new VPN endpoint.
+  args:
+  - name: name
+    required: true
+    help: Connection name.
+
+  flags:
+  - long: --vpc-id
+    arg: vpc_id
+    required: true
+    help: ID of your VPC.
+
+  - long: --subnet-ids
+    arg: subnet_ids
+    required: true
+    help: List of subnet ids (separated by comma).
+
+- name: update
+  help: Update a new VPN endpoint
+  args:
+  - name: name
+    required: true
+    help: Connection name.
+
+- name: info
+  help: Describe the connection
+  args:
+  - name: name
+    required: true
+    help: Connection name.
+
+- name: connect
+  help: Connect to the VPN
+  args:
+  - name: name
+    required: true
+    help: Connection name.
+
+- name: disconnect
+  help: Disconnect from the VPN
+  args:
+  - name: name
+    required: true
+    help: Connection name.
+
+- name: delete
+  help: Delete a connect
+  args:
+  - name: name
+    required: true
+    help: Connection name.
+
+examples:
+- aws-vpn create <name> <vpc_id> <subnet_ids>
+- aws-vpn connect <name>
+- aws-vpn disconnect <name>
+- aws-vpn delete <name>
