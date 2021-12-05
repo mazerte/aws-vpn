@@ -10,24 +10,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-11
 
     steps:
       # Checks-out repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
 
-      # Setup Ruby
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.7
+      - run: brew install tunnelblick
+      - run: brew install tunnelblickctl
+      - run: brew install awscli
 
       # Install bashly
-      - name: Install bashly
-        run: gem install bashly
+      - run: gem install bashly
 
       # Run bashly
-      - name: Run bashly
-        run: bashly generate
+      - run: bashly generate
 
       # Smoke test
       - name: Smoke test
