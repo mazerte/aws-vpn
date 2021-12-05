@@ -19,7 +19,6 @@ jobs:
       - run: brew install tunnelblick
       - run: brew tap benwebber/tunnelblickctl
       - run: brew install tunnelblickctl
-      - run: brew install awscli
 
       # Install bashly
       - run: gem install bashly
