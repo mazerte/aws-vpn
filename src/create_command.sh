@@ -1,11 +1,13 @@
 NAME="${args[name]}"
 VPC_ID="${args[--vpc-id]}"
 SUBNET_IDS="${args[--subnet-ids]}"
+DNS="${args[--dns]}"
 
 CONFIG_FILE="$AWS_VPN_DIR/config/$NAME.properties"
 echo "NAME=$NAME" > $CONFIG_FILE
 echo "VPC_ID=$VPC_ID" >> $CONFIG_FILE
 echo "SUBNET_IDS=$SUBNET_IDS" >> $CONFIG_FILE
+echo "DNS=$DNS" >> $CONFIG_FILE
 
 echo ""
 echo "$(green_bold "Create certificat")"

@@ -179,6 +179,11 @@ aws_vpn_create_usage() {
     echo "  --subnet-ids SUBNET_IDS (required)"
     printf "    List of subnet ids (separated by comma).\n"
     echo
+
+    # :flag.usage
+    echo "  --dns DNS"
+    printf "    Activate DNS resolve through the VPC. You must provide the NetworkService\n    (values can be found using 'networksetup -listallnetworkservices')\n"
+    echo
     # :command.usage_args
     printf "Arguments:\n"
 
@@ -203,7 +208,7 @@ aws_vpn_update_usage() {
   fi
 
   printf "Usage:\n"
-  printf "  aws-vpn update NAME\n"
+  printf "  aws-vpn update NAME [options]\n"
   printf "  aws-vpn update --help | -h\n"
   echo
 
@@ -213,7 +218,11 @@ aws_vpn_update_usage() {
     echo "  --help, -h"
     printf "    Show this help\n"
     echo
-
+    # :command.usage_flags
+    # :flag.usage
+    echo "  --dns DNS"
+    printf "    Activate DNS resolve through the VPC. You must provide the NetworkService\n    (values can be found using 'networksetup -listallnetworkservices')\n"
+    echo
     # :command.usage_args
     printf "Arguments:\n"
 
@@ -472,11 +481,13 @@ aws_vpn_create_command() {
   NAME="${args[name]}"
   VPC_ID="${args[--vpc-id]}"
   SUBNET_IDS="${args[--subnet-ids]}"
+  DNS="${args[--dns]}"
 
   CONFIG_FILE="$AWS_VPN_DIR/config/$NAME.properties"
   echo "NAME=$NAME" > $CONFIG_FILE
   echo "VPC_ID=$VPC_ID" >> $CONFIG_FILE
   echo "SUBNET_IDS=$SUBNET_IDS" >> $CONFIG_FILE
+  echo "DNS=$DNS" >> $CONFIG_FILE
 
   echo ""
   echo "$(green_bold "Create certificat")"
@@ -510,7 +521,16 @@ aws_vpn_create_command() {
 aws_vpn_update_command() {
   # :src/update_command.sh
   NAME="${args[name]}"
+  DNS="${args[--dns]}"
   CONFIG_FILE="$AWS_VPN_DIR/config/$NAME.properties"
+
+  if ! [ -z "$DNS" ]; then
+    echo "Update DNS configuration"
+    sed -i '' "/^DNS/d" $CONFIG_FILE
+    if ! [ "$DNS" == "false" ]; then
+      echo "DNS=\"$DNS\"" >> $CONFIG_FILE
+    fi
+  fi
 
   . $CONFIG_FILE
 
@@ -559,17 +579,33 @@ aws_vpn_info_command() {
 # :command.function
 aws_vpn_connect_command() {
   # :src/connect_command.sh
-  connection=${args[name]}
+  NAME=${args[name]}
+  CONFIG_FILE="$AWS_VPN_DIR/config/$NAME.properties"
 
-  tunnelblickctl connect "$connection.aws.vpn"
+  . $CONFIG_FILE
+
+  tunnelblickctl connect "$NAME.aws.vpn"
+
+  if ! [ -z "$DNS" ]; then
+    CIDR=`aws ec2 describe-vpcs --vpc-ids $VPC_ID | jq -r ".Vpcs[0].CidrBlock"`
+    DNS_SERVER=`echo "$CIDR" | sed -E "s/0\/[0-9]{1,2}/2/g"`
+    networksetup -setdnsservers "$DNS" $DNS_SERVER
+  fi
 }
 
 # :command.function
 aws_vpn_disconnect_command() {
   # :src/disconnect_command.sh
-  connection=${args[name]}
+  NAME=${args[name]}
+  CONFIG_FILE="$AWS_VPN_DIR/config/$NAME.properties"
 
-  tunnelblickctl disconnect "$connection.aws.vpn"
+  . $CONFIG_FILE
+
+  tunnelblickctl disconnect "$NAME.aws.vpn"
+
+  if ! [ -z "$DNS" ]; then
+    networksetup -setdnsservers "$DNS" empty
+  fi
 }
 
 # :command.function
@@ -912,6 +948,19 @@ aws_vpn_create_parse_requirements() {
       fi
       ;;
 
+    # :flag.case
+    --dns )
+      if [[ -n ${2+x} ]]; then
+        # :flag.validations
+        args[--dns]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--dns requires an argument: --dns DNS"
+        exit 1
+      fi
+      ;;
+
     -* )
       printf "invalid option: %s\n" "$key"
       exit 1
@@ -974,6 +1023,18 @@ aws_vpn_update_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
+    # :flag.case
+    --dns )
+      if [[ -n ${2+x} ]]; then
+        # :flag.validations
+        args[--dns]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--dns requires an argument: --dns DNS"
+        exit 1
+      fi
+      ;;
 
     -* )
       printf "invalid option: %s\n" "$key"
@@ -996,7 +1057,7 @@ aws_vpn_update_parse_requirements() {
   done
   # :command.required_args_filter
   if [[ -z ${args[name]+x} ]]; then
-    printf "missing required argument: NAME\nusage: aws-vpn update NAME\n"
+    printf "missing required argument: NAME\nusage: aws-vpn update NAME [options]\n"
     exit 1
   fi
   # :command.required_flags_filter
@@ -1227,7 +1288,7 @@ aws_vpn_delete_parse_requirements() {
 
 # :command.initialize
 initialize() {
-  version="0.1.9"
+  version="VERSION"
   long_usage=''
   set -e
 
@@ -1246,8 +1307,8 @@ initialize() {
       cp config.tpl.ovpn $AWS_VPN_DIR/config.tpl.ovpn
     else
       REPO_URL="https://raw.githubusercontent.com/mazerte/aws-vpn/main/"
-      curl -s "$REPO_URL/vpn.cfn.yml" > $AWS_VPN_DIR/vpn.cfn.yml
-      curl -s "$REPO_URL/config.tpl.ovpn" > $AWS_VPN_DIR/config.tpl.ovpn
+      curl -L -s "$REPO_URL/vpn.cfn.yml" > $AWS_VPN_DIR/vpn.cfn.yml
+      curl -L -s "$REPO_URL/config.tpl.ovpn" > $AWS_VPN_DIR/config.tpl.ovpn
     fi
   }
 

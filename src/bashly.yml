@@ -30,12 +30,23 @@ commands:
     required: true
     help: List of subnet ids (separated by comma).
 
+  - long: --dns
+    arg: dns
+    required: false
+    help: Activate DNS resolve through the VPC. You must provide the NetworkService (values can be found using 'networksetup -listallnetworkservices')
+
 - name: update
   help: Update a new VPN endpoint
   args:
   - name: name
     required: true
     help: Connection name.
+
+  flags:
+  - long: --dns
+    arg: dns
+    required: false
+    help: Activate DNS resolve through the VPC. You must provide the NetworkService (values can be found using 'networksetup -listallnetworkservices')
 
 - name: info
   help: Describe the connection
