@@ -18,8 +18,8 @@ function _init_folders() {
     cp config.tpl.ovpn $AWS_VPN_DIR/config.tpl.ovpn
   else
     REPO_URL="https://raw.githubusercontent.com/mazerte/aws-vpn/main/"
-    curl -s "$REPO_URL/vpn.cfn.yml" > $AWS_VPN_DIR/vpn.cfn.yml
-    curl -s "$REPO_URL/config.tpl.ovpn" > $AWS_VPN_DIR/config.tpl.ovpn
+    curl -L -s "$REPO_URL/vpn.cfn.yml" > $AWS_VPN_DIR/vpn.cfn.yml
+    curl -L -s "$REPO_URL/config.tpl.ovpn" > $AWS_VPN_DIR/config.tpl.ovpn
   fi
 }
 
